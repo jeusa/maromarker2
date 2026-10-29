@@ -26,10 +26,10 @@ cp -a "$DISTDIR/." "$APPDIR/usr/bin/"
 
 cp packaging/AppRun "$APPDIR/"
 cp packaging/maromarker2.desktop "$APPDIR/"
-cp packaging/maromarker2.png "$APPDIR/"
+cp packaging/maromarker2.svg "$APPDIR/"
 
 chmod +x "$APPDIR/AppRun"
-ln -s maromarker2.png "$APPDIR/.DirIcon"
+ln -s maromarker2.svg "$APPDIR/.DirIcon"
 
 # Download the AppImage packaging tool.
 curl -fL \
