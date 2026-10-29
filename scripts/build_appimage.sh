@@ -14,6 +14,8 @@ python -m nuitka \
     --enable-plugin=pyside6 \
     --include-package=maromarker2 \
     --include-package-data=maromarker2 \
+    --show-scons \
+    --assume-yes-for-downloads \
     --output-dir=build/appimage \
     --output-filename=maromarker2.bin \
     app_entry.py
