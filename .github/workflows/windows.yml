@@ -1,0 +1,60 @@
+name: Build Windows application
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    defaults:
+      run:
+        shell: pwsh
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          architecture: x64
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            build_requirements.txt
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+          python -m pip install -r build_requirements.txt
+
+      - name: Build Windows application
+        run: |
+          python -m nuitka `
+            --standalone `
+            --enable-plugin=pyside6 `
+            --include-package=maromarker2 `
+            --include-package-data=maromarker2 `
+            --msvc=latest `
+            --assume-yes-for-downloads `
+            --output-dir=build/windows `
+            --output-filename=maromarker2.exe `
+            app_entry.py
+
+          if ($LASTEXITCODE -ne 0) {
+            exit $LASTEXITCODE
+          }
+
+      - name: Upload Windows application
+        uses: actions/upload-artifact@v4
+        with:
+          name: MarOMarker2-Windows-x86_64
+          path: build/windows/app_entry.dist/
+          if-no-files-found: error
+          retention-days: 14
