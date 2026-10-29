@@ -1,8 +1,8 @@
 # MarOMarker2
 
-Desktop application for annotating animals in stereo image pairs. It records head/tail (and optional width) keypoints in the left and right image, matches the animals between both views, and derives real-world length and height from a stereo camera calibration. Annotations can be proposed by a keypoint-detection model (ONNX YOLO-pose) and are then reviewed and corrected by hand.
+Desktop application for annotating animals in stereo image pairs. It records head/tail (and optional width) keypoints in the left and right image, matches the animals between both views, and derives real-world length and height from a stereo camera calibration. Annotations can be proposed by a keypoint-detection model (ONNX U-YOLO Pose) and are then reviewed and corrected by hand.
 
-It is a rewrite of the legacy [fish_detection/MarOMarker](https://github.com/y-jenniges/fish_detection) for Python 3.12, PySide6 and OpenCV; the output CSV keeps the legacy column layout, so files remain interchangeable.
+It is a rewrite of the legacy [fish_detection/MarOMarker](https://github.com/y-jenniges/fish_detection) by Yvonne Jenniges for Python 3.12, PySide6 and OpenCV; the output CSV keeps the legacy column layout, so files remain interchangeable.
 
 ![MarOMarker2 main window](resources/app_ui.png)
 
@@ -15,7 +15,7 @@ For a usage walkthrough see [INSTRUCTIONS.md](INSTRUCTIONS.md).
 - **Taxonomy:** group / subgroup / species hierarchy loaded from YAML, with a built-in hierarchy editor. Unknown levels are `unidentified`.
 - **Matching:** manual L/R matching, or automatic matching (Hungarian algorithm over epipolar, geometric, length and orientation costs) with a review dialog.
 - **Measurement:** length (head–tail) and height (width points) by stereo triangulation, recalculated automatically for matched animals.
-- **AI mode:** background keypoint detection for the current pair or all pairs with an exported U-Yolo Pose ONNX model, with progress and cancel.
+- **AI mode:** background keypoint detection for the current pair or all pairs with an exported U-YOLO Pose ONNX model, with progress and cancel.
 - **Review workflow:** per-animal status (`checked` / `unchecked`), manual-correction flag, object and image remarks with configurable presets, per-pair checked state.
 - **Image aids:** brightness, contrast, CLAHE, white balance, hide markers; configurable marker appearance; light/dark theme.
 - **Persistence:** CSV output (continues an existing file), remembered setup values and settings via `QSettings`, rotating log in `~/.maromarker2/maromarker2.log`.
@@ -118,7 +118,7 @@ flowchart TD
 
 ### `maromarker2/predictors/` and `maromarker2/workers/`
 
-- `predictors/__init__.py` defines `KeypointPredictor` and `PredictedAnimal`; `onnx_predictor.py` implements it on top of `workers/inference_standalone.py` (self-contained ONNX YOLO-pose inference with hierarchy descent and NMS), including model validation.
+- `predictors/__init__.py` defines `KeypointPredictor` and `PredictedAnimal`; `onnx_predictor.py` implements it on top of `workers/inference_standalone.py` (self-contained ONNX U-YOLO Pose inference with hierarchy descent and NMS), including model validation.
 - `prediction_worker.py` runs a predictor over image pairs on a `QThread` and emits progress and results; the editor applies them to the store on the main thread.
 - `matching_worker.py` and `triangulation_worker.py` wrap the geometry code in the same QObject + `run()` pattern.
 
