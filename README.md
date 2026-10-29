@@ -37,9 +37,3 @@ The AI model path (an `.onnx` file) is optional; set it in the project setup dia
 In AI mode keypoint predictions for the current image pair and for every pair can be generated. Predictions whose head/tail match an existing animal are discarded; new ones get status `unchecked` and `manually_corrected` False, with classes mapped onto the loaded hierarchy (unknown levels become `unidentified`). The predicted bounding boxes are only shown and never written to the CSV. Moving a keypoint or changing the class marks the animal `checked` and manually corrected.
 
 Prediction runs in the background: a progress bar with a Cancel button appears in the status bar. While it runs, editing and saving are locked; navigating between image pairs, zooming and selecting animals still work.
-
-## Running tests
-
-```
-QT_QPA_PLATFORM=offscreen /home/jeusa/anaconda3/envs/mom/bin/python -m pytest tests -v
-```
