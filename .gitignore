@@ -1,0 +1,19 @@
+.vscode
+**.pyc
+**__pycache__
+
+**.pickle
+**log
+
+# media files
+**.jpg
+**.tif
+**.mp4
+
+## ml models dir
+ml_models/
+
+# build and tools
+/build
+/tools
+/dist

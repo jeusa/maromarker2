@@ -1,0 +1,4 @@
+libpython-static
+nuitka
+ordered-set
+zstandard

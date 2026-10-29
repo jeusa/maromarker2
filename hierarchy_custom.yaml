@@ -1,0 +1,73 @@
+jellyfish:
+  rank: group
+  children:
+    ctenophora:
+      rank: subgroup
+      children:
+      - beroe_sp
+      - bolinopsis_infundibulum
+      - euplokamis_dunlapae
+      - mertensia_ovum
+      - mnemiopsis_leidyi
+      - pleurobrachia_pileus
+    hydrozoa:
+      rank: subgroup
+      children:
+      - aglantha_digitale
+      - physonectidae_sp
+    real_jellyfish:
+      rank: subgroup
+      children:
+      - cyanea_capillata
+fish:
+  rank: group
+  children:
+    benthic:
+      rank: subgroup
+      children:
+      - blenidae_sp
+      - gymnocantus_tricuspis
+      - lumpenus_sp
+      - myoxocephalus_scorpius
+    pelagic:
+      rank: subgroup
+      children:
+      - boreogadus_saida
+      - gadus_morhua
+      - mallotus_villosus
+      - melanogrammus_aeglefinus
+crustacea:
+  rank: group
+  children:
+    benthic:
+      rank: subgroup
+      children:
+      - hyas_araneus
+    pelagic:
+      rank: subgroup
+      children:
+      - mysis_oculata
+      - amphipoda_sp
+mollusca:
+  rank: group
+  children:
+    benthic:
+      rank: subgroup
+      children:
+      - buccinum_undatum
+    pelagic:
+      rank: subgroup
+      children:
+      - clione_limacina
+      - limacina_helicina
+tunicata:
+  rank: group
+  children:
+    pelagic:
+      rank: subgroup
+      children:
+      - apendicularia_sp
+dog:
+  rank: group
+  children:
+  - "sch\xE4fer_hund"
