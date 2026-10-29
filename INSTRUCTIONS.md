@@ -27,7 +27,7 @@ Start another session via **File > New Session…**.
 
 ![MarOMarker2 main window](resources/app_ui.png)
 
-## 3. Edit mode (default)
+## 3. Edit mode
 
 | Tool | Key | Action |
 |---|---|---|
@@ -35,7 +35,7 @@ Start another session via **File > New Session…**.
 | Add | `A` | Click head, then tail. For an animal that has no width yet, the next two clicks near it set the width keypoints |
 | Remove | `R` | Click an animal to delete it (click a width keypoint to delete only the width) |
 
-Set group/subgroup/species and a remark for the selected animal in the right panel. Animals can also be selected in the lists (`Ctrl`+click toggles, `Shift`+click selects a range, `Ctrl+A` selects all).
+Set group/subgroup/species and a remark for the selected animal in the right panel. Animals can also be selected in the lists (`Ctrl`+click toggles, `Shift`+click selects a range, `Ctrl+A` selects all). Apply bulk edits for all selected animals at the same time.
 
 ## 4. Match mode (`M`)
 
