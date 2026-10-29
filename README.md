@@ -1,10 +1,10 @@
-# MarOMarker 2
+# MarOMarker2
 
 Desktop application for annotating animals in stereo image pairs. It records head/tail (and optional width) keypoints in the left and right image, matches the animals between both views, and derives real-world length and height from a stereo camera calibration. Annotations can be proposed by a keypoint-detection model (ONNX YOLO-pose) and are then reviewed and corrected by hand.
 
 It is a rewrite of the legacy [fish_detection/MarOMarker](https://github.com/y-jenniges/fish_detection) for Python 3.12, PySide6 and OpenCV; the output CSV keeps the legacy column layout, so files remain interchangeable.
 
-![MarOMarker 2 main window](resources/app_ui.png)
+![MarOMarker2 main window](resources/app_ui.png)
 
 For a usage walkthrough see [INSTRUCTIONS.md](INSTRUCTIONS.md).
 
