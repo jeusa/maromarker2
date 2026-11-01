@@ -2,7 +2,7 @@
 
 Desktop application for annotating animals in stereo image pairs. It records head/tail (and optional width) keypoints in the left and right image, matches the animals between both views, and derives real-world length and height from a stereo camera calibration. Annotations can be proposed by a keypoint-detection model (ONNX U-YOLO Pose) and are then reviewed and corrected by hand.
 
-It is a rewrite of the legacy [fish_detection/MarOMarker](https://github.com/y-jenniges/fish_detection) by Yvonne Jenniges for Python 3.12, PySide6 and OpenCV; the output CSV keeps the legacy column layout, so files remain interchangeable.
+It is a rewrite of the legacy [fish_detection/MarOMarker](https://github.com/y-jenniges/fish_detection) by Yvonne Jenniges for Python 3.12, PySide6; the output CSV keeps the legacy column layout, so files remain interchangeable.
 
 ![MarOMarker2 main window](resources/app_ui.png)
 
@@ -58,6 +58,19 @@ The Windows build runs the same Nuitka command in `.github/workflows/windows.yml
 
 An animal seen in only one image is a left-only or right-only row; matching merges the two into one row with both sides filled.
 
+### Default files
+
+The application ships a default camera config (`config_remos1.json`, also `config_remos3.json`), the default hierarchy (`hierarchy_full.yaml`) and a default AI model (`best.onnx` + `inference_args.yaml`). The setup dialog is prefilled with them, and every field can still be pointed at your own files.
+
+These bundlesd files are copied on startup to a persistent per-user folder, which the file dialogs also open in:
+
+| OS | Folder |
+|---|---|
+| Linux | `~/.local/share/MarOMarker2/defaults/` |
+| Windows | `%LOCALAPPDATA%\MarOMarker2\defaults\` |
+
+It contains `camera_configs/`, `hierarchy/` and `ai_model/`; open it with **File > Open Defaults Folder**. Add your own camera configs there if you like. A file you edited is never overwritten; unmodified copies are refreshed when a new release changes the bundled file, and a deleted file is restored on the next start. The default model is stored with Git LFS (`*.onnx`).
+
 ## Repository structure
 
 ```
@@ -70,7 +83,8 @@ maromarker2/              Application package
   workers/                QObject workers and standalone inference code
   ui/                     PySide6 user interface
   configs/                Example camera calibrations and hierarchy
-  resources/              Application icon
+  defaults.py             Bundled default files and their persistent per-user copy
+  resources/              Application icon and default AI model
 tests/                    pytest suite (data layer, geometry, workers, UI widgets)
 packaging/                AppImage files (AppRun, .desktop, icon)
 scripts/build_appimage.sh AppImage build script

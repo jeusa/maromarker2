@@ -7,7 +7,7 @@ import json
 from PySide6.QtCore import QSettings
 
 ORG_NAME = "MarOMarker"
-APP_NAME = "MarOMarkerV2"
+APP_NAME = "MarOMarker2"
 
 DEFAULT_OBJECT_REMARK_OPTIONS = ["not determined", "animal incomplete"]
 DEFAULT_IMAGE_REMARK_OPTIONS = [
@@ -44,6 +44,11 @@ class AppSettings:
     @last_hierarchy_path.setter
     def last_hierarchy_path(self, value: str) -> None:
         self._settings.setValue("last_hierarchy_path", value)
+
+    @property
+    def has_ai_model_choice(self) -> bool:
+        """True once the user has confirmed a session, including an empty (= no AI model) choice."""
+        return self._settings.contains("last_ai_model_path")
 
     @property
     def last_ai_model_path(self) -> str:

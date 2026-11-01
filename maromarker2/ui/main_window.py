@@ -8,11 +8,13 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtGui import QKeySequence
+from PySide6.QtCore import QUrl
+from PySide6.QtGui import QDesktopServices, QKeySequence
 from PySide6.QtWidgets import (
     QApplication, QFileDialog, QLabel, QMainWindow, QMessageBox, QProgressBar, QPushButton,
 )
 
+from maromarker2 import defaults
 from maromarker2.models.annotation_store import AnnotationStore
 from maromarker2.models.camera_calibration import CameraCalibration
 from maromarker2.models.image_set import ImagePair, scan_image_set, suggest_output_filename
@@ -52,6 +54,7 @@ class MainWindow(QMainWindow):
     def _init_menu(self) -> None:
         file_menu = self.menuBar().addMenu("&File")
         file_menu.addAction("New Session…", self._on_new_session)
+        file_menu.addAction("Open Defaults Folder", self._on_open_defaults_folder)
         self._save_action = file_menu.addAction("&Save", self._on_save)
         self._save_action.setShortcut(QKeySequence.Save)
         file_menu.addSeparator()
@@ -151,6 +154,11 @@ class MainWindow(QMainWindow):
         if dialog.exec() and dialog.project_config is not None:
             self.load_project(dialog.project_config)
 
+    def _on_open_defaults_folder(self) -> None:
+        folder = defaults.user_defaults_dir()
+        folder.mkdir(parents=True, exist_ok=True)
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(folder)))
+
     def _on_edit_hierarchy(self) -> None:
         taxonomy = self.taxonomy or Taxonomy.load_default()
         source = self.project_config.hierarchy_path if self.project_config is not None else DEFAULT_HIERARCHY_PATH
@@ -190,7 +198,8 @@ class MainWindow(QMainWindow):
         current = self._settings.last_ai_model_path
         if self.project_config is not None and self.project_config.ai_model_path is not None:
             current = str(self.project_config.ai_model_path)
-        path, _ = QFileDialog.getOpenFileName(self, "Select AI model", current, "ONNX model (*.onnx)")
+        start = defaults.browse_dir(current, defaults.AI_MODEL_SUBDIR)
+        path, _ = QFileDialog.getOpenFileName(self, "Select AI model", start, "ONNX model (*.onnx)")
         if not path:
             return
         error = validate_model_path(path)

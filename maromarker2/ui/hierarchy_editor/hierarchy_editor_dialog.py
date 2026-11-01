@@ -8,6 +8,7 @@ from PySide6.QtWidgets import (
     QDialog, QFileDialog, QHBoxLayout, QInputDialog, QLabel, QMessageBox, QPushButton, QVBoxLayout,
 )
 
+from maromarker2 import defaults
 from maromarker2.models.taxonomy import DEFAULT_HIERARCHY_PATH, Taxonomy
 from maromarker2.ui.hierarchy_editor.hierarchy_tree_widget import HierarchyTreeWidget
 
@@ -132,7 +133,7 @@ class HierarchyEditorDialog(QDialog):
         return path
 
     def _on_save_as(self) -> bool:
-        start_dir = ""
+        start_dir = str(defaults.user_defaults_dir() / defaults.HIERARCHY_SUBDIR)
         if self.source_path is not None and not _same_file(self.source_path, DEFAULT_HIERARCHY_PATH):
             start_dir = str(self.source_path.parent)
         path, _ = QFileDialog.getSaveFileName(

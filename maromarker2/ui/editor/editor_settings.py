@@ -6,7 +6,7 @@ from PySide6.QtCore import QSettings
 from PySide6.QtGui import QColor
 
 ORG_NAME = "MarOMarker"
-APP_NAME = "MarOMarkerV2"
+APP_NAME = "MarOMarker2"
 
 DEFAULT_MARKER_RADIUS = 12.0
 DEFAULT_LINE_WIDTH = 5

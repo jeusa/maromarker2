@@ -12,11 +12,19 @@ from PySide6.QtWidgets import (
     QLineEdit, QMessageBox, QPushButton, QWidget,
 )
 
+from maromarker2 import defaults
 from maromarker2.models.camera_calibration import CameraCalibration
 from maromarker2.models.project_config import ProjectConfig
-from maromarker2.models.taxonomy import DEFAULT_HIERARCHY_PATH, Taxonomy
+from maromarker2.models.taxonomy import Taxonomy
 from maromarker2.predictors.onnx_predictor import validate_model_path
 from maromarker2.ui.app_settings import AppSettings
+
+
+def _initial_path(saved: str, default: Path | None) -> str:
+    """The remembered file if it still exists, else the default (remembered paths can go stale)."""
+    if saved and Path(saved).is_file():
+        return saved
+    return str(default) if default else ""
 
 
 def _browse_row(line_edit: QLineEdit, on_browse) -> QWidget:
@@ -44,14 +52,22 @@ class ProjectSetupDialog(QDialog):
         self.edit_image_root = QLineEdit(self._settings.last_image_root)
         self.edit_prefix = QLineEdit(self._settings.last_image_prefix)
         self.edit_output_csv = QLineEdit(self._settings.last_output_csv_path)
-        self.edit_camera_config = QLineEdit(self._settings.last_camera_config_path)
-        self.edit_hierarchy = QLineEdit(self._settings.last_hierarchy_path or str(DEFAULT_HIERARCHY_PATH))
-        self.edit_ai_model = QLineEdit(self._settings.last_ai_model_path)
+        self.edit_camera_config = QLineEdit(
+            _initial_path(self._settings.last_camera_config_path, defaults.default_camera_config_path())
+        )
+        self.edit_hierarchy = QLineEdit(
+            _initial_path(self._settings.last_hierarchy_path, defaults.default_hierarchy_path())
+        )
+        if self._settings.has_ai_model_choice and not self._settings.last_ai_model_path:
+            ai_model_text = ""  # the user deliberately cleared the model
+        else:
+            ai_model_text = _initial_path(self._settings.last_ai_model_path, defaults.default_ai_model_path())
+        self.edit_ai_model = QLineEdit(ai_model_text)
         self.edit_user_id = QLineEdit(self._settings.last_user_id)
         self.edit_experiment_id = QLineEdit(self._settings.last_experiment_id)
 
         self.edit_output_csv.setPlaceholderText("Leave empty to auto-name from image dates")
-        self.edit_ai_model.setPlaceholderText("Optional; needs inference_args.yaml next to it")
+        self.edit_ai_model.setPlaceholderText("Optional; needs inference_args.yaml next to it (leave empty for none)")
 
         form = QFormLayout()
         form.addRow("Image directory*", _browse_row(self.edit_image_root, self._on_browse_image_root))
@@ -81,17 +97,20 @@ class ProjectSetupDialog(QDialog):
             self.edit_output_csv.setText(path)
 
     def _on_browse_camera_config(self) -> None:
-        path, _ = QFileDialog.getOpenFileName(self, "Select camera configuration file", filter="*.json")
+        start = defaults.browse_dir(self.edit_camera_config.text(), defaults.CAMERA_CONFIG_SUBDIR)
+        path, _ = QFileDialog.getOpenFileName(self, "Select camera configuration file", start, "*.json")
         if path:
             self.edit_camera_config.setText(path)
 
     def _on_browse_hierarchy(self) -> None:
-        path, _ = QFileDialog.getOpenFileName(self, "Select hierarchy file", filter="*.yaml *.yml")
+        start = defaults.browse_dir(self.edit_hierarchy.text(), defaults.HIERARCHY_SUBDIR)
+        path, _ = QFileDialog.getOpenFileName(self, "Select hierarchy file", start, "*.yaml *.yml")
         if path:
             self.edit_hierarchy.setText(path)
 
     def _on_browse_ai_model(self) -> None:
-        path, _ = QFileDialog.getOpenFileName(self, "Select AI model", filter="*.onnx")
+        start = defaults.browse_dir(self.edit_ai_model.text(), defaults.AI_MODEL_SUBDIR)
+        path, _ = QFileDialog.getOpenFileName(self, "Select AI model", start, "*.onnx")
         if path:
             self.edit_ai_model.setText(path)
 

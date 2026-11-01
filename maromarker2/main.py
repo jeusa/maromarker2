@@ -10,6 +10,7 @@ from pathlib import Path
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication
 
+from maromarker2 import defaults
 from maromarker2.ui.app_settings import AppSettings
 from maromarker2.ui.main_window import MainWindow
 from maromarker2.ui.project_setup_dialog import ProjectSetupDialog
@@ -38,13 +39,17 @@ _configure_logging()
 
 def main() -> int:
     app = QApplication(sys.argv)
-    app.setOrganizationName("University Bremen + Alfred Wegener Institute")
+    app.setOrganizationName("MarOMarker")
     app.setApplicationName("MarOMarker2")
     app.setDesktopFileName("maromarker2")
     if ICON_PATH.is_file():
         app.setWindowIcon(QIcon(str(ICON_PATH)))
 
     settings = AppSettings()
+    try:
+        defaults.ensure_user_defaults()
+    except Exception:
+        logging.getLogger(__name__).warning("Could not set up the user defaults folder", exc_info=True)
     apply_theme(app, settings.dark_theme)
     setup_dialog = ProjectSetupDialog(settings)
     if not setup_dialog.exec() or setup_dialog.project_config is None:
