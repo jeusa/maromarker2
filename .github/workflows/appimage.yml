@@ -10,6 +10,9 @@ jobs:
   build:
     runs-on: ubuntu-24.04
 
+    env:
+      NUITKA_CACHE_DIR: ${{ github.workspace }}/.nuitka-cache
+
     steps:
       - name: Download repository
         uses: actions/checkout@v6
@@ -50,6 +53,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           python -m pip install -r build_requirements.txt
+
+      - name: Cache Nuitka and ccache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.NUITKA_CACHE_DIR }}
+          key: nuitka-linux-${{ hashFiles('requirements.txt', 'build_requirements.txt') }}-${{ github.sha }}
+          restore-keys: |
+            nuitka-linux-${{ hashFiles('requirements.txt', 'build_requirements.txt') }}-
+            nuitka-linux-
 
       - name: Build AppImage
         run: bash scripts/build_appimage.sh

@@ -10,6 +10,9 @@ jobs:
   build:
     runs-on: windows-2022
 
+    env:
+      NUITKA_CACHE_DIR: ${{ github.workspace }}\.nuitka-cache
+
     defaults:
       run:
         shell: pwsh
@@ -35,6 +38,15 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
           python -m pip install -r build_requirements.txt
+
+      - name: Cache Nuitka and clcache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.NUITKA_CACHE_DIR }}
+          key: nuitka-windows-${{ hashFiles('requirements.txt', 'build_requirements.txt') }}-${{ github.sha }}
+          restore-keys: |
+            nuitka-windows-${{ hashFiles('requirements.txt', 'build_requirements.txt') }}-
+            nuitka-windows-
 
       - name: Build Windows application
         run: |
