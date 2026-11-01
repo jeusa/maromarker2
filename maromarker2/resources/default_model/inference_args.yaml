@@ -1,0 +1,137 @@
+model:
+  onnx_file: best.onnx
+  source_run: 26-10-18_13:21:02_experiment
+  source_weights: best.pt
+  exported_at: '2026-10-27T13:33:48'
+  imgsz: 1024
+  dynamic_axes: true
+channels: 3
+kpt_shape:
+- 2
+- 3
+names:
+  0: jellyfish
+  1: ctenophora
+  2: beroe_sp
+  3: bolinopsis_infundibulum
+  4: euplokamis_dunlapae
+  5: mertensia_ovum
+  6: mnemiopsis_leidyi
+  7: pleurobrachia_pileus
+  8: hydrozoa
+  9: aglantha_digitale
+  10: physonectidae_sp
+  11: cyanea_capillata
+  12: fish
+  13: fish_benthic
+  14: gymnocantus_tricuspis
+  15: myoxocephalus_scorpius
+  16: fish_pelagic
+  17: boreogadus_saida
+  18: gadus_morhua
+  19: crustacea
+  20: crustacea_pelagic
+  21: mysis_oculata
+  22: amphipoda_sp
+  23: hyas_araneus
+  24: chaetognatha
+  25: mollusca_pelagic
+  26: clione_limacina
+  27: limacina_helicina
+  28: apendicularia_sp
+hierarchical_labels: true
+use_softmax: false
+symmetric_class_ids:
+- 0
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+- 8
+- 9
+- 10
+- 11
+- 28
+hierarchy_training:
+  hierarchy:
+    jellyfish:
+      rank: group
+      children:
+        ctenophora:
+          rank: subgroup
+          children:
+          - beroe_sp
+          - bolinopsis_infundibulum
+          - euplokamis_dunlapae
+          - mertensia_ovum
+          - mnemiopsis_leidyi
+          - pleurobrachia_pileus
+        hydrozoa:
+          rank: subgroup
+          children:
+          - aglantha_digitale
+          - physonectidae_sp
+        cyanea_capillata:
+          rank: species
+    fish:
+      rank: group
+      children:
+        fish_benthic:
+          rank: subgroup
+          children:
+          - gymnocantus_tricuspis
+          - myoxocephalus_scorpius
+        fish_pelagic:
+          rank: subgroup
+          children:
+          - boreogadus_saida
+          - gadus_morhua
+    crustacea:
+      rank: group
+      children:
+        crustacea_pelagic:
+          rank: subgroup
+          children:
+          - mysis_oculata
+          - amphipoda_sp
+        hyas_araneus:
+          rank: species
+    chaetognatha:
+      rank: group
+    mollusca_pelagic:
+      rank: subgroup
+      children:
+      - clione_limacina
+      - limacina_helicina
+    apendicularia_sp:
+      rank: species
+  symmetric_classes:
+  - jellyfish
+  - apendicularia_sp
+preprocessing:
+  apply_clahe: false
+  clahe_clip_limit: 2.0
+  clahe_grid_size: 16
+  apply_white_balance: false
+output_format:
+  layout: (batch, 4 + class_channels + kpt_values, anchors)
+  box: xywh in input pixels
+  class_channels: 29
+  class_scores: sigmoid probabilities; with use_softmax the last class channel is
+    background
+  kpt_values: 6
+  keypoints: per keypoint x, y in input pixels and visibility score
+  total_channels: 39
+postprocessing:
+  nms_iou: 0.7
+  max_det: 300
+  agnostic_nms: true
+  hierarchy_contain_thresh: 0.85
+thresholds:
+  conf: 0.5450901803607214
+  conf_source: eval_config
+  hierarchy_descent_conf: 0.5450901803607214
+  hierarchy_descent_conf_source: eval_config
