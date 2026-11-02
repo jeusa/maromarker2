@@ -2,7 +2,7 @@
 
 Desktop application for annotating animals in stereo image pairs. It records head/tail (and optional width) keypoints in the left and right image, matches the animals between both views, and derives real-world length and height from a stereo camera calibration. Annotations can be proposed by a keypoint-detection model (ONNX U-YOLO Pose) and are then reviewed and corrected by hand.
 
-It is a rewrite of the legacy [fish_detection/MarOMarker](https://github.com/y-jenniges/fish_detection) by Yvonne Jenniges for Python 3.12, PySide6; the output CSV keeps the legacy column layout, so files remain interchangeable.
+It is a rewrite of the legacy [fish_detection/MarOMarker](https://github.com/y-jenniges/fish_detection) by Yvonne Jenniges for Python 3.12, PySide6. The output CSV keeps the legacy column layout, so files remain interchangeable.
 
 ![MarOMarker2 main window](resources/app_ui.png)
 
@@ -56,7 +56,7 @@ The Windows build runs the same Nuitka command in `.github/workflows/windows.yml
 | AI model (`.onnx`, optional) | Needs the `inference_args.yaml` written at export time next to it |
 | Output CSV | One row per animal: `file_id`, classes, `LX1..RY4` keypoints (coordinates ≤ 0 mean "no point"), `length`, `height`, remarks, `status`, `manually_corrected`, `experiment_id`, `user_id` |
 
-An animal seen in only one image is a left-only or right-only row; matching merges the two into one row with both sides filled.
+An animal seen in only one image is a left-only or right-only row. Matching merges the two into one row with both sides filled.
 
 ### Default files
 
