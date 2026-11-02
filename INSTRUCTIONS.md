@@ -4,7 +4,7 @@ Annotate animals (head/tail, optional width) in stereo image pairs, match them b
 
 ## Get the application
 
-Download the latest build from the [GitHub releases page](https://github.com/jeusa/maromarker2/releases). Each release contains binaries for Windows and Ubuntu (Linux), built by the project's GitHub workflows.
+Download the latest build from the [GitHub releases page](https://github.com/jeusa/maromarker2/releases). Each release contains binaries for Windows and Linux (Ubuntu), built by the project's GitHub workflows.
 
 - **Windows:** download the Windows archive, extract it and run `maromarker2.exe`.
 - **Ubuntu/Linux:** download `MarOMarker2-x86_64.AppImage`, make it executable (`chmod +x MarOMarker2-x86_64.AppImage`) and run it.
