@@ -1,5 +1,9 @@
 # MarOMarker2
 
+© 2026 [Jeúsa Hamer](https://orcid.org/0000-0001-8562-8806)
+
+Developed for the Alfred Wegener Institute as part of a Master's thesis, supervised by Philipp Fischer (AWI) and Udo Frese (University of Bremen).
+
 Desktop application for annotating animals in stereo image pairs. It records head/tail (and optional width) keypoints in the left and right image, matches the animals between both views, and derives real-world length and height from a stereo camera calibration. Annotations can be proposed by a keypoint-detection model (ONNX U-YOLO Pose) and are then reviewed and corrected by hand.
 
 It is a rewrite of the legacy [fish_detection/MarOMarker](https://github.com/y-jenniges/fish_detection) by Yvonne Jenniges for Python 3.12, PySide6. The output CSV keeps the legacy column layout, so files remain interchangeable.
