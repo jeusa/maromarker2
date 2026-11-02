@@ -2,9 +2,18 @@
 
 Annotate animals (head/tail, optional width) in stereo image pairs, match them between the left (L) and right (R) image, and obtain length/height measurements.
 
+## Get the application
+
+Download the latest build from the [GitHub releases page](https://github.com/jeusa/maromarker2/releases). Each release contains binaries for Windows and Ubuntu (Linux), built by the project's GitHub workflows.
+
+- **Windows:** download the Windows archive, extract it and run `maromarker2.exe`.
+- **Ubuntu/Linux:** download `MarOMarker2-x86_64.AppImage`, make it executable (`chmod +x MarOMarker2-x86_64.AppImage`) and run it.
+
+To run from source instead, see the [README](README.md).
+
 ## 1. Start a session
 
-Launch the app (`python -m maromarker2.main` or AppImage or Exe). In the setup dialog fill in (`*` = required):
+Launch the app (the downloaded binary, or `python -m maromarker2.main` when running from source). In the setup dialog fill in (`*` = required):
 
 | Field | Meaning |
 |---|---|
