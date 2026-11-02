@@ -244,7 +244,6 @@ class MainWindow(QMainWindow):
             return
         if self.editor is not None:
             self.editor.commit_pending_edits()
-            self.editor.mark_current_pair_checked()
         path = self.project_config.output_csv_path
         if path is None:
             path, _ = QFileDialog.getSaveFileName(self, "Save annotations as", filter="*.csv")

@@ -177,7 +177,7 @@ def test_main_window_save_writes_csv(qapp, settings, project_config):
     assert project_config.output_csv_path.is_file()
 
 
-def test_main_window_save_marks_current_pair_checked(qapp, settings, project_config):
+def test_main_window_save_keeps_status(qapp, settings, project_config):
     window = MainWindow(project_config, settings)
     file_id = window.editor.image_pairs[window.editor.current_pair_index].file_id
     store = window.annotation_store
@@ -185,7 +185,7 @@ def test_main_window_save_marks_current_pair_checked(qapp, settings, project_con
 
     window._on_save()
 
-    assert store.data.loc[index, "status"] == "checked"
+    assert store.data.loc[index, "status"] == "unchecked"
 
 
 def test_ctrl_s_saves_csv(qapp, settings, project_config):
