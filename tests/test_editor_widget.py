@@ -939,9 +939,38 @@ def test_multi_selection_side_panel_shows_mixed_values_without_overwriting(edito
     assert editor.store.data.loc[second, "object_remarks"] == "x"
 
 
-def test_side_panel_has_no_status_or_manually_corrected_fields(editor):
-    assert not hasattr(editor.side_panel, "combo_status")
+def test_side_panel_has_no_manually_corrected_field(editor):
     assert not hasattr(editor.side_panel, "check_manually_corrected")
+
+
+def test_side_panel_status_follows_status_change_of_selected_animal(editor):
+    row = editor.scene_l.add_animal(QPointF(10, 10), QPointF(20, 20))
+    editor.store.update_row(row, status="unchecked", manually_corrected=False)
+    editor._on_selection_changed(row)
+    assert editor.side_panel.combo_status.currentText() == "unchecked"
+
+    editor.store.update_row(row, status="checked", manually_corrected=True)
+    editor.scene_l.animal_moved.emit(row)
+
+    assert editor.side_panel.combo_status.currentText() == "checked"
+
+
+def test_side_panel_status_applies_to_selection_except_unchecking_manually_corrected(editor):
+    corrected = editor.scene_l.add_animal(QPointF(10, 10), QPointF(20, 20))
+    other = editor.scene_l.add_animal(QPointF(30, 30), QPointF(40, 40))
+    editor.store.update_row(other, status="checked", manually_corrected=False)
+    editor.set_status_options(["unchecked", "checked", "uncertain"])
+    editor._selected_rows = {corrected, other}
+
+    editor.side_panel.status_changed.emit("unchecked")
+    assert editor.store.data.loc[corrected, "status"] == "checked"
+    assert editor.store.data.loc[other, "status"] == "unchecked"
+
+    editor.side_panel.status_changed.emit("uncertain")
+    assert editor.store.data.loc[corrected, "status"] == "uncertain"
+    assert editor.store.data.loc[other, "status"] == "uncertain"
+    editor._undo()
+    assert editor.store.data.loc[other, "status"] == "unchecked"
 
 
 def test_split_selected_splits_all_selected_matches(editor):

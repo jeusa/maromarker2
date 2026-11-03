@@ -48,7 +48,8 @@ def _enabled_items(combo):
 
 
 def _row(**fields):
-    base = {"group": "", "subgroup": "", "species": "", "object_remarks": ""}
+    base = {"group": "", "subgroup": "", "species": "", "object_remarks": "", "status": "unchecked",
+            "manually_corrected": False}
     base.update(fields)
     return pd.Series(base)
 
@@ -281,6 +282,36 @@ def test_unidentified_species_with_mixed_subgroups_leaves_subgroup_unchanged(pan
     panel.combo_species.setCurrentText("unidentified")
 
     assert received == [(None, "unidentified")]
+
+
+def test_status_dropdown_shows_status_and_emits_only_for_user_picks(panel):
+    received = []
+    panel.status_changed.connect(received.append)
+    panel.set_status_options(["unchecked", "checked", "uncertain"])
+
+    panel.set_animal(_row(status="uncertain"))
+    assert panel.combo_status.currentText() == "uncertain"
+    assert panel.combo_status.isEnabled()
+    assert received == []
+
+    panel.combo_status.textActivated.emit("checked")
+    assert received == ["checked"]
+
+
+def test_status_dropdown_only_disables_unchecked_for_manually_corrected_and_blank_when_mixed(panel):
+    panel.set_animal(_row(status="checked", manually_corrected=True))
+    assert panel.combo_status.currentText() == "checked"
+    assert panel.combo_status.isEnabled()
+    assert _enabled_items(panel.combo_status) == ["checked"]
+
+    panel.set_animals(pd.DataFrame([_row(status="checked", manually_corrected=True), _row(status="unchecked")]))
+    assert panel.combo_status.currentIndex() == -1
+    assert _enabled_items(panel.combo_status) == ["unchecked", "checked"]
+
+
+def test_status_dropdown_lists_unknown_row_status(panel):
+    panel.set_animal(_row(status="legacy"))
+    assert panel.combo_status.currentText() == "legacy"
 
 
 def test_group_changed_signal_emitted_on_user_change(panel):

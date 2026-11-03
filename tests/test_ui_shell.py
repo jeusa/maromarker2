@@ -210,13 +210,13 @@ def test_ctrl_s_saves_csv(qapp, settings, project_config):
 def test_theme_menu_action_toggles_theme_and_label(qapp, settings, project_config):
     settings.dark_theme = False
     window = MainWindow(project_config, settings)
-    assert window._theme_action.text() == "Toggle &Dark Theme"
+    assert window._theme_action.text() == "Toggle Dark &Theme"
     window._theme_action.trigger()
     assert settings.dark_theme is True
-    assert window._theme_action.text() == "Toggle &Light Theme"
+    assert window._theme_action.text() == "Toggle Light &Theme"
     window._theme_action.trigger()
     assert settings.dark_theme is False
-    assert window._theme_action.text() == "Toggle &Dark Theme"
+    assert window._theme_action.text() == "Toggle Dark &Theme"
 
 
 def test_remark_options_are_persisted_per_type(qapp, settings):
@@ -253,6 +253,27 @@ def test_remark_options_dialog_saves_both_lists(qapp, settings):
 
     assert settings.object_remark_options == ["alive", "damaged"]
     assert settings.image_remark_options == ["blurry"]
+
+
+def test_status_options_always_include_checked_and_unchecked(qapp, settings):
+    assert settings.status_options == ["unchecked", "checked"]
+
+    settings.status_options = ["uncertain", "checked"]
+    assert settings.status_options == ["uncertain", "checked", "unchecked"]
+
+    dialog = RemarkOptionsDialog(settings)
+    dialog.edit_status_options.setPlainText("unchecked\nchecked\nto review")
+    dialog._on_accept()
+    assert settings.status_options == ["unchecked", "checked", "to review"]
+
+
+def test_main_window_applies_saved_status_options_to_editor(qapp, settings, project_config):
+    settings.status_options = ["unchecked", "checked", "to review"]
+
+    window = MainWindow(project_config, settings)
+
+    combo = window.editor.side_panel.combo_status
+    assert [combo.itemText(i) for i in range(combo.count())] == ["unchecked", "checked", "to review"]
 
 
 def test_main_window_applies_saved_remark_options_to_editor(qapp, settings, project_config):

@@ -81,7 +81,7 @@ Both images are zoomed and panned together. Leaving a pair marks its animals as 
 
 ## 7. Settings
 
-- **Remark options…:** presets offered for object and image remarks.
+- **Remark/Status options…:** presets offered for object and image remarks and object status.
 - **Edit hierarchy…:** edit and save the group/subgroup/species hierarchy.
 - **AI model…:** choose the `.onnx` model.
 - **Appearance…:** marker size, colours, shapes, line/bounding box display.

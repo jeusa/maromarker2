@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
         file_menu.addAction("E&xit", self.close)
 
         settings_menu = self.menuBar().addMenu("&Settings")
-        settings_menu.addAction("&Remark options…", self._on_remark_options)
+        settings_menu.addAction("Remark/Status &options…", self._on_remark_options)
         settings_menu.addAction("Edit &hierarchy…", self._on_edit_hierarchy)
         settings_menu.addAction("AI &model…", self._on_ai_model)
         self._appearance_action = settings_menu.addAction("&Appearance…", self._on_appearance)
@@ -105,7 +105,7 @@ class MainWindow(QMainWindow):
         self._save_action.setEnabled(self.project_config is not None)
 
     def _update_theme_action_text(self) -> None:
-        self._theme_action.setText("Toggle &Light Theme" if self._settings.dark_theme else "Toggle &Dark Theme")
+        self._theme_action.setText("Toggle Light &Theme" if self._settings.dark_theme else "Toggle Dark &Theme")
 
     def load_project(self, project_config: ProjectConfig) -> None:
         try:
@@ -227,6 +227,7 @@ class MainWindow(QMainWindow):
             self.editor.set_remark_options(
                 self._settings.object_remark_options, self._settings.image_remark_options
             )
+            self.editor.set_status_options(self._settings.status_options)
 
     def _on_toggle_theme(self) -> None:
         self._settings.dark_theme = not self._settings.dark_theme

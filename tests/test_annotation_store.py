@@ -353,7 +353,7 @@ def _animal(store, file_id, **kwargs):
     return store.add_row(store.build_row(file_id, left={"head": (1, 1), "tail": (2, 2)}, **kwargs))
 
 
-def test_image_checked_requires_animals_that_are_all_checked():
+def test_image_checked_requires_animals_and_none_unchecked():
     store = AnnotationStore()
     assert not store.is_image_checked("img1")  # no animals at all
 
@@ -361,9 +361,28 @@ def test_image_checked_requires_animals_that_are_all_checked():
     second = _animal(store, "img1", status="unchecked")
     assert not store.is_image_checked("img1")
 
-    store.update_row(second, status="checked")
+    store.update_row(second, status="uncertain")  # any status other than "unchecked" counts as checked
     assert store.is_image_checked("img1")
+    assert store.image_overview(["img1"])["img1"][1]
     assert first in store.data.index
+
+
+def test_mark_file_checked_and_unchecked_only_touch_checked_unchecked_statuses():
+    store = AnnotationStore()
+    unchecked = _animal(store, "img1", status="unchecked", manually_corrected=False)
+    other = _animal(store, "img1", status="uncertain", manually_corrected=False)
+    checked = _animal(store, "img1", status="checked", manually_corrected=False)
+    corrected = _animal(store, "img1", status="checked", manually_corrected=True)
+
+    assert store.mark_file_checked("img1")
+    assert list(store.data.loc[[unchecked, other, checked, corrected], "status"]) == [
+        "checked", "uncertain", "checked", "checked",
+    ]
+
+    assert store.mark_file_unchecked("img1")
+    assert list(store.data.loc[[unchecked, other, checked, corrected], "status"]) == [
+        "unchecked", "uncertain", "unchecked", "checked",
+    ]
 
 
 def test_set_image_remark_applies_to_all_rows_of_the_image_only():

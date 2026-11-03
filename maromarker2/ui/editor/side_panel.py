@@ -3,10 +3,11 @@
 from __future__ import annotations
 
 import pandas as pd
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import QComboBox, QFormLayout, QWidget
 
 from maromarker2.models.taxonomy import UNIDENTIFIED, Taxonomy
+from maromarker2.ui.app_settings import DEFAULT_STATUS_OPTIONS
 from maromarker2.ui.editor.remark_edit import RemarkEdit
 
 MIXED_PLACEHOLDER = "(multiple values)"
@@ -22,22 +23,27 @@ class SidePanel(QWidget):
     # (subgroup, species): subgroup follows the species' own subgroup; None leaves it unchanged
     species_changed = Signal(object, str)
     remark_changed = Signal(str)
+    status_changed = Signal(str)  # only emitted for user picks
 
     def __init__(self, taxonomy: Taxonomy, parent=None):
         super().__init__(parent)
         self.taxonomy = taxonomy
         self._panel_enabled = False
+        self._uncheck_blocked = False
 
         self.combo_group = QComboBox()
         self.combo_group.addItems([UNIDENTIFIED] + taxonomy.groups())
         self.combo_subgroup = QComboBox()
         self.combo_species = QComboBox()
+        self.combo_status = QComboBox()
+        self.combo_status.addItems(DEFAULT_STATUS_OPTIONS)
         self.edit_remark = RemarkEdit()
 
         form = QFormLayout(self)
         form.addRow("Group", self.combo_group)
         form.addRow("Subgroup", self.combo_subgroup)
         form.addRow("Species", self.combo_species)
+        form.addRow("Status", self.combo_status)
         form.addRow("Remark", self.edit_remark)
         # hierarchies without a subgroup level don't need the field at all
         form.setRowVisible(self.combo_subgroup, taxonomy.has_subgroup_level)
@@ -49,12 +55,53 @@ class SidePanel(QWidget):
         self.combo_group.currentTextChanged.connect(self._on_group_changed)
         self.combo_subgroup.currentTextChanged.connect(self._on_subgroup_changed)
         self.combo_species.currentTextChanged.connect(self._on_species_changed)
+        self.combo_status.textActivated.connect(self.status_changed)
         self.edit_remark.textEdited.connect(self._on_remark_edited)
         self.edit_remark.editingFinished.connect(self._on_remark_finished)
         self._remark_mixed = False
 
     def set_remark_options(self, options: list[str]) -> None:
         self.edit_remark.set_options(options)
+
+    def set_status_options(self, options: list[str]) -> None:
+        was_blocked = self.combo_status.blockSignals(True)
+        current = self.combo_status.currentText()
+        self.combo_status.clear()
+        self.combo_status.addItems(options)
+        self._select_status(current)
+        self._update_unchecked_item()
+        self.combo_status.blockSignals(was_blocked)
+
+    def _select_status(self, status: str) -> None:
+        """Shows ``status``, adding it to the list if it is not one of the configured options."""
+        if status and self.combo_status.findText(status, Qt.MatchFixedString) < 0:
+            self.combo_status.addItem(status)
+        self.combo_status.setCurrentIndex(self.combo_status.findText(status, Qt.MatchFixedString))
+
+    def _set_status(self, statuses, corrected) -> None:
+        """Shows the common status (blank if mixed). Manually corrected animals are always "checked",
+        so with only such animals selected "unchecked" is not offered."""
+        unique = {str(value or "") for value in statuses}
+        if len(unique) == 1:
+            self._select_status(unique.pop())
+        else:
+            self.combo_status.setCurrentIndex(-1)
+        self._uncheck_blocked = all(bool(value) for value in corrected)
+        self._update_unchecked_item()
+
+    def refresh_status(self, rows: pd.DataFrame) -> None:
+        """Re-reads only the status field, for changes made elsewhere while rows are selected."""
+        if rows.empty:
+            return
+        was_blocked = self.combo_status.blockSignals(True)
+        self._set_status(rows["status"], rows["manually_corrected"])
+        self.combo_status.blockSignals(was_blocked)
+
+    def _update_unchecked_item(self) -> None:
+        model = self.combo_status.model()
+        for row in range(self.combo_status.count()):
+            if self.combo_status.itemText(row).lower() == "unchecked":
+                model.item(row).setEnabled(not self._uncheck_blocked)
 
     def set_enabled(self, enabled: bool) -> None:
         self._panel_enabled = enabled
@@ -67,6 +114,7 @@ class SidePanel(QWidget):
         choice to make, so it is disabled (showing that single option)."""
         self.combo_subgroup.setEnabled(self._panel_enabled and self.combo_subgroup.count() > 1)
         self.combo_species.setEnabled(self._panel_enabled and self.combo_species.count() > 1)
+        self.combo_status.setEnabled(self._panel_enabled)
 
     def _subgroup_options(self, group: str) -> list[str]:
         if not group or group == UNIDENTIFIED:
@@ -161,7 +209,7 @@ class SidePanel(QWidget):
             self.remark_changed.emit(self.edit_remark.text())
 
     def _block_field_signals(self, blocked: bool) -> None:
-        for widget in (self.combo_group, self.combo_subgroup, self.combo_species, self.edit_remark):
+        for widget in (self.combo_group, self.combo_subgroup, self.combo_species, self.combo_status, self.edit_remark):
             widget.blockSignals(blocked)
 
     def _reset_mixed_state(self) -> None:
@@ -175,8 +223,9 @@ class SidePanel(QWidget):
             self.set_enabled(False)
             return
 
-        self.set_enabled(True)
         self._block_field_signals(True)
+        self._set_status([row.get("status")], [row.get("manually_corrected")])
+        self.set_enabled(True)
 
         self.combo_group.setCurrentText(_class_value(row.get("group")))
         group = self.combo_group.currentText()
@@ -205,8 +254,9 @@ class SidePanel(QWidget):
             return
 
         self._reset_mixed_state()
-        self.set_enabled(True)
         self._block_field_signals(True)
+        self._set_status(rows["status"], rows["manually_corrected"])
+        self.set_enabled(True)
 
         group = self._common_value(_class_value(v) for v in rows["group"])
         if group is None:

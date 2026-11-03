@@ -175,6 +175,7 @@ class EditorWidget(QWidget):
         self.side_panel.subgroup_changed.connect(lambda sg, s: self._update_selected(subgroup=sg, species=s))
         self.side_panel.species_changed.connect(lambda sg, s: self._update_selected(subgroup=sg, species=s))
         self.side_panel.remark_changed.connect(lambda v: self._update_selected(object_remarks=v))
+        self.side_panel.status_changed.connect(self._set_selected_status)
 
         self.label_pair = QLabel("No images loaded")
         self.label_counts = QLabel("")
@@ -837,6 +838,20 @@ class EditorWidget(QWidget):
                 scene.refresh()
             self._refresh_animal_lists()
 
+    def _set_selected_status(self, status: str) -> None:
+        """Sets the status of the selected animals; manually corrected ones cannot become "unchecked"."""
+        if self._editing_locked or not self._selected_rows:
+            return
+        with self._undo_group("Set status"):
+            for row_index in sorted(self._selected_rows):
+                if row_index not in self.store.data.index:
+                    continue
+                if status.lower() == "unchecked" and bool(self.store.data.loc[row_index, "manually_corrected"]):
+                    continue
+                self.store.update_row(row_index, status=status)
+        self.side_panel.set_animals(self.store.data.loc[sorted(self._selected_rows)])
+        self._refresh_animal_lists()
+
     def _delete_selected(self) -> None:
         if not self._selected_rows:
             return
@@ -914,12 +929,17 @@ class EditorWidget(QWidget):
             panel.select_rows(self._rows_for_side(s))
             panel.blockSignals(False)
         self._sync_matched_list_selection()
-
+        selected = [row for row in sorted(self._selected_rows) if row in self.store.data.index]
+        self.side_panel.refresh_status(self.store.data.loc[selected])
     # --- remarks ------------------------------------------------------------------ #
     def set_remark_options(self, object_options: list[str], image_options: list[str]) -> None:
         """Sets the preset choices offered by the object remark and image remark fields."""
         self.side_panel.set_remark_options(object_options)
         self.image_list.set_remark_options(image_options)
+
+    def set_status_options(self, options: list[str]) -> None:
+        """Sets the statuses offered by the status dropdown of the side panel."""
+        self.side_panel.set_status_options(options)
 
     def _on_image_remark_edited(self, remark: str) -> None:
         if self._editing_locked or self._pair_index < 0 or remark == self.store.image_remark(self._current_file_id()):
@@ -929,14 +949,15 @@ class EditorWidget(QWidget):
         self._refresh_animal_lists()
 
     def mark_current_pair_checked(self) -> None:
-        """Sets all animals of the current image pair to "checked" (no-op while editing is locked)."""
+        """Sets all "unchecked" animals of the current image pair to "checked" (no-op while editing is locked)."""
         if self._editing_locked or self._pair_index < 0:
             return
         if self.store.mark_file_checked(self._current_file_id()):
             self._refresh_animal_lists()
 
     def _on_pair_checked_toggled(self, index: int, checked: bool) -> None:
-        """The checked box of an image pair was clicked: check all its animals, or uncheck those not manually corrected."""
+        """The checked box of an image pair was clicked: "unchecked" animals become "checked", or "checked" ones
+        not manually corrected become "unchecked"; other statuses stay."""
         if not 0 <= index < len(self.image_pairs):
             return
         if not self._editing_locked:

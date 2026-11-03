@@ -10,6 +10,8 @@ ORG_NAME = "MarOMarker"
 APP_NAME = "MarOMarker2"
 
 DEFAULT_OBJECT_REMARK_OPTIONS = ["not determined", "animal incomplete"]
+REQUIRED_STATUS_OPTIONS = ["unchecked", "checked"]
+DEFAULT_STATUS_OPTIONS = list(REQUIRED_STATUS_OPTIONS)
 DEFAULT_IMAGE_REMARK_OPTIONS = [
     "low turbidity", "medium turbidity", "high turbidity", "wrong illumination", "without flashlight",
 ]
@@ -113,6 +115,15 @@ class AppSettings:
     @image_remark_options.setter
     def image_remark_options(self, options: list[str]) -> None:
         self._settings.setValue("image_remark_options", json.dumps(list(options)))
+
+    @property
+    def status_options(self) -> list[str]:
+        options = self._remark_options("status_options", DEFAULT_STATUS_OPTIONS)
+        return options + [status for status in REQUIRED_STATUS_OPTIONS if status not in options]
+
+    @status_options.setter
+    def status_options(self, options: list[str]) -> None:
+        self._settings.setValue("status_options", json.dumps(list(options)))
 
     def _remark_options(self, key: str, defaults: list[str]) -> list[str]:
         # the defaults apply until the user saves their own list (which may be empty);

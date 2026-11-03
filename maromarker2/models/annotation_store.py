@@ -154,9 +154,9 @@ class AnnotationStore:
         return next((remark for remark in remarks if remark), "")
 
     def is_image_checked(self, file_id: str) -> bool:
-        """True if the image pair has animals and every one of them has the status "checked"."""
+        """True if the image pair has animals and none of them has the status "unchecked"."""
         rows = self.rows_for_file(file_id)
-        return not rows.empty and bool((rows["status"].astype(str).str.lower() == "checked").all())
+        return not rows.empty and not bool((rows["status"].astype(str).str.lower() == "unchecked").any())
 
     def image_overview(self, file_ids: Sequence[str]) -> dict[str, tuple[int, bool, str]]:
         """``{file_id: (animal_count, is_image_checked, image_remark)}`` for many images at once."""
@@ -166,7 +166,7 @@ class AnnotationStore:
         if not self.data.empty:
             file_column = self.data["file_id"]
             counts = file_column.value_counts().to_dict()
-            checked = (self.data["status"].astype(str).str.lower() == "checked").groupby(file_column).all().to_dict()
+            checked = (self.data["status"].astype(str).str.lower() != "unchecked").groupby(file_column).all().to_dict()
             remark_column = self.data["image_remarks"].astype(object).fillna("").astype(str)
             remarks = remark_column.where(remark_column != "").groupby(file_column).first().fillna("").to_dict()
         return {
@@ -230,20 +230,20 @@ class AnnotationStore:
             self.data.loc[index, key] = value
 
     def mark_file_checked(self, file_id: str) -> bool:
-        """Sets the status of every row of the image pair to "checked", without stamping user/experiment ids.
-        Returns True if any row changed."""
+        """Sets every "unchecked" row of the image pair to "checked" (other statuses stay), without
+        stamping user/experiment ids. Returns True if any row changed."""
         rows = self.rows_for_file(file_id)
-        changed = rows.index[rows["status"].astype(str).str.lower() != "checked"]
+        changed = rows.index[rows["status"].astype(str).str.lower() == "unchecked"]
         for index in changed:
             self.update_row(index, stamp=False, status="checked")
         return len(changed) > 0
 
     def mark_file_unchecked(self, file_id: str) -> bool:
-        """Sets the status to "unchecked" for every row of the image pair that was not manually corrected,
-        without stamping user/experiment ids. Returns True if any row changed."""
+        """Sets every "checked" row of the image pair that was not manually corrected to "unchecked"
+        (other statuses stay), without stamping user/experiment ids. Returns True if any row changed."""
         rows = self.rows_for_file(file_id)
         changed = rows.index[
-            (rows["status"].astype(str).str.lower() != "unchecked") & ~rows["manually_corrected"].astype(bool)
+            (rows["status"].astype(str).str.lower() == "checked") & ~rows["manually_corrected"].astype(bool)
         ]
         for index in changed:
             self.update_row(index, stamp=False, status="unchecked")

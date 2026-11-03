@@ -18,23 +18,26 @@ def parse_options(text: str) -> list[str]:
 
 
 class RemarkOptionsDialog(QDialog):
-    """Edits the preset remark choices (one per line) of both remark types."""
+    """Edits the preset remark choices (one per line) of both remark types and the status choices."""
 
     def __init__(self, settings: AppSettings | None = None, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Remark options")
-        self.resize(480, 420)
+        self.setWindowTitle("Remark and Status options")
+        self.resize(480, 560)
 
         self._settings = settings or AppSettings()
 
         self.edit_object_options = QPlainTextEdit("\n".join(self._settings.object_remark_options))
         self.edit_image_options = QPlainTextEdit("\n".join(self._settings.image_remark_options))
+        self.edit_status_options = QPlainTextEdit("\n".join(self._settings.status_options))
 
         layout = QVBoxLayout(self)
         layout.addWidget(QLabel("Object remark options (one per line)"))
         layout.addWidget(self.edit_object_options)
         layout.addWidget(QLabel("Image remark options (one per line)"))
         layout.addWidget(self.edit_image_options)
+        layout.addWidget(QLabel("Status options (one per line; \"checked\" and \"unchecked\" are always available)"))
+        layout.addWidget(self.edit_status_options)
 
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self._on_accept)
@@ -44,4 +47,5 @@ class RemarkOptionsDialog(QDialog):
     def _on_accept(self) -> None:
         self._settings.object_remark_options = parse_options(self.edit_object_options.toPlainText())
         self._settings.image_remark_options = parse_options(self.edit_image_options.toPlainText())
+        self._settings.status_options = parse_options(self.edit_status_options.toPlainText())
         self.accept()
