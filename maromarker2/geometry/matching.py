@@ -1,15 +1,14 @@
 """Automatic left/right animal matching via a Hungarian-algorithm cost matrix.
 
-Cost combines (per user spec):
-  1. post-rectification epipolar-line closeness (|rectified_L.y - rectified_R.y|)
-  2. pre-rectification geometric distance between raw L/R head positions
-  3. |head-to-tail vector length_L - head-to-tail vector length_R|
-  4. head-to-tail vector orientation difference between L and R (degrees)
+Cost combines:
+  1. post-rectification epipolar-line closeness (|rectified_L.y - rectified_R.y|), summed over head and tail
+  2. |head-to-tail vector length_L - head-to-tail vector length_R| (rectified coordinates)
+  3. head-to-tail vector orientation difference between L and R (degrees, rectified coordinates)
 
 Assignments above ``max_cost`` are rejected (left unmatched) rather than forced; pairs
 whose group/subgroup/species disagree ("unidentified" matches anything) always are.
-Empirically (real config.json + real matched pairs, see tests): true matches cost
-~10-80 with default weights, mismatches cost 500+, so 150.0 is a safe default cutoff.
+Empirically (real config.json + real matched pairs, see tests): true matches usually cost
+~20-120, so 300.0 should be a safe default cutoff.
 """
 
 from __future__ import annotations
@@ -45,8 +44,7 @@ class MatchCandidate:
 @dataclass
 class MatchWeights:
     epipolar: float = 1.0
-    geometric: float = 0.01
-    length: float = 0.5
+    length: float = 1.0
     orientation: float = 1.0
 
 
@@ -57,8 +55,12 @@ class MatchResult:
     cost: float
 
 
-def _head_tail_vector(candidate: MatchCandidate) -> np.ndarray:
-    return np.array(candidate.tail, dtype=np.float64) - np.array(candidate.head, dtype=np.float64)
+def _rectified_head_and_tail(
+    calibration: CameraCalibration, candidate: MatchCandidate, side: str
+) -> tuple[np.ndarray, np.ndarray]:
+    head = np.array(calibration.undistort_point(candidate.head, side), dtype=np.float64)
+    tail = np.array(calibration.undistort_point(candidate.tail, side), dtype=np.float64)
+    return head, tail
 
 
 def _angle_difference_deg(vec_a: np.ndarray, vec_b: np.ndarray) -> float:
@@ -77,27 +79,30 @@ def build_cost_matrix(
     """NxM cost matrix for ``left`` candidates (rows) vs. ``right`` candidates (columns)."""
     cost = np.zeros((len(left), len(right)), dtype=np.float64)
 
+    rect_left = [_rectified_head_and_tail(calibration, l, "L") for l in left]
+    rect_right = [_rectified_head_and_tail(calibration, r, "R") for r in right]
+
     for i, l in enumerate(left):
-        rect_head_l = calibration.undistort_point(l.head, "L")
-        vec_l = _head_tail_vector(l)
+        rect_head_l, rect_tail_l = rect_left[i]
+        vec_l = rect_tail_l - rect_head_l
         length_l = float(np.linalg.norm(vec_l))
 
         for j, r in enumerate(right):
             if merge_classes(l.group, l.subgroup, l.species, r.group, r.subgroup, r.species) is None:
                 cost[i, j] = INCOMPATIBLE_COST
                 continue
-            rect_head_r = calibration.undistort_point(r.head, "R")
-            vec_r = _head_tail_vector(r)
+            rect_head_r, rect_tail_r = rect_right[j]
+            vec_r = rect_tail_r - rect_head_r
             length_r = float(np.linalg.norm(vec_r))
 
-            epipolar = abs(float(rect_head_l[1]) - float(rect_head_r[1]))
-            geometric = float(np.linalg.norm(np.array(l.head) - np.array(r.head)))
+            epipolar_head = abs(float(rect_head_l[1]) - float(rect_head_r[1]))
+            epipolar_tail = abs(float(rect_tail_l[1]) - float(rect_tail_r[1]))
+            epipolar = epipolar_head + epipolar_tail
             length_diff = abs(length_l - length_r)
             orientation_diff = _angle_difference_deg(vec_l, vec_r)
 
             cost[i, j] = (
                 weights.epipolar * epipolar
-                + weights.geometric * geometric
                 + weights.length * length_diff
                 + weights.orientation * orientation_diff
             )
@@ -110,7 +115,7 @@ def match_candidates(
     left: Sequence[MatchCandidate],
     right: Sequence[MatchCandidate],
     weights: MatchWeights = MatchWeights(),
-    max_cost: float = 150.0,
+    max_cost: float = 300.0,
 ) -> list[MatchResult]:
     """Solve the assignment problem and reject pairs whose cost exceeds ``max_cost``."""
     if not left or not right:

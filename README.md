@@ -4,7 +4,7 @@
 
 Developed for the Alfred Wegener Institute as part of a Master's thesis, supervised by Philipp Fischer (AWI) and Udo Frese (University of Bremen).
 
-Desktop application for annotating animals in stereo image pairs. It records head/tail (and optional width) keypoints in the left and right image, matches the animals between both views, and derives real-world length and height from a stereo camera calibration. Annotations can be proposed by a keypoint-detection model (ONNX U-YOLO Pose) and are then reviewed and corrected by hand.
+Desktop application for annotating animals in stereo image pairs. It records head/tail (and optional height) keypoints in the left and right image, matches the animals between both views, and derives real-world length and height from a stereo camera calibration. Annotations can be proposed by a keypoint-detection model (ONNX U-YOLO Pose) and are then reviewed and corrected by hand.
 
 It is a rewrite of the legacy [fish_detection/MarOMarker](https://github.com/y-jenniges/fish_detection) by Yvonne Jenniges for Python 3.12, PySide6. The output CSV keeps the legacy column layout, so files remain interchangeable.
 
@@ -15,10 +15,10 @@ For a usage walkthrough see [INSTRUCTIONS.md](INSTRUCTIONS.md).
 ## Features
 
 - **Stereo image sets:** scans a folder for `{prefix}_{yyyy.MM.dd}_{HH.MM.ss}_{L|R}.{jpg,jpeg,png}` files, pairs left/right images and sorts them chronologically.
-- **Keypoint annotation:** add, move and remove head/tail and width points on synchronised, zoomable left/right views; undo/redo for every edit.
+- **Keypoint annotation:** add, move and remove head/tail and height points on synchronised, zoomable left/right views; undo/redo for every edit.
 - **Taxonomy:** group / subgroup / species hierarchy loaded from YAML, with a built-in hierarchy editor. Unknown levels are `unidentified`.
-- **Matching:** manual L/R matching, or automatic matching (Hungarian algorithm over epipolar, geometric, length and orientation costs) with a review dialog.
-- **Measurement:** length (head–tail) and height (width points) by stereo triangulation, recalculated automatically for matched animals.
+- **Matching:** manual L/R matching, or automatic matching (Hungarian algorithm over epipolar, length and orientation costs) with a review dialog.
+- **Measurement:** length (head–tail) and height (height points) by stereo triangulation, recalculated automatically for matched animals.
 - **AI mode:** background keypoint detection for the current pair or all pairs with an exported U-YOLO Pose ONNX model, with progress and cancel.
 - **Review workflow:** per-animal status (`checked` / `unchecked`), manual-correction flag, object and image remarks with configurable presets, per-pair checked state.
 - **Image aids:** brightness, contrast, CLAHE, white balance, hide markers; configurable marker appearance; light/dark theme.
